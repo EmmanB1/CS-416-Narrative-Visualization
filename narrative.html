@@ -1,68 +1,263 @@
 <!DOCTYPE html>
 <html>
+<style>
+  /*
+    Source For Toggle Switch: https://www.w3schools.com/howto/howto_css_switch.asp 
+  */
+    /* The switch - the box around the slider */
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+  }
 
+  /* Hide default HTML checkbox */
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  /* The slider */
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+
+  input:checked + .slider {
+    background-color: #2196F3;
+  }
+
+  input:focus + .slider {
+    box-shadow: 0 0 1px #2196F3;
+  }
+
+  input:checked + .slider:before {
+    -webkit-transform: translateX(26px);
+    -ms-transform: translateX(26px);
+    transform: translateX(26px);
+  }
+
+
+</style>
 <!-- Load d3.js -->
 <script src="https://d3js.org/d3.v6.js"></script>
 
 <!-- Create a div where the graph will take place -->
-<div id="my_dataviz"></div>
+<div>
+  <h1> Covid-19 in America: Through The Years</h1>
+  <button onclick="firstScene()"> 2020 </button>
+  <button onclick="secondScene()"> 2021 </button>
+  <button onclick="thirdScene()"> 2022 </button>
+  <div id="my_dataviz">
+    <svg id="svg_viz"></svg>
+  </div>
+  <!-- <label class="switch">
+    <input type="checkbox">
+    <div class="slider"> <span>confirmed</span></div>
+  </label> -->
+  <div id="curr_view"> </div>
+  <button id="confirmed_btn" value="Confirmed" onclick="paramTrigger('Confirmed')"> Confirmed </button>
+  <button id="death_btn" value="Deaths" onclick="paramTrigger('Deaths')"> Deaths </button>
+</div>
 
 
 <script>
-
+  
   // set the dimensions and margins of the graph
-  const margin = {top: 10, right: 30, bottom: 30, left: 60},
-      width = 460 - margin.left - margin.right,
-      height = 400 - margin.top - margin.bottom;
+  const margin = {top: 10, right: 30, bottom: 30, left: 80},
+      width = 760 - margin.left - margin.right,
+      height = 700 - margin.top - margin.bottom;
   
   // append the svg object to the body of the page
-  const svg = d3.select("#my_dataviz")
-    .append("svg")
+  const svg = d3.select("#svg_viz")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
     .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
-  
+  let param = "Confirmed";
+  let scene_num = 0;
+  document.getElementById("curr_view").innerHTML = "Now Viewing: " + param;
+
+  // @TODO: Connect this with the data
+  function paramTrigger(value) {
+    // update website view
+    document.getElementById("curr_view").innerHTML = "Now Viewing: " + value;
+    // Update page if parameter is changed
+    if (param != value) {
+      param = value;
+      if (scene_num == 1) firstScene();
+      else if (scene_num == 2) secondScene();
+      else if (scene_num == 3) thirdScene();
+    }
+  }
   //Read the data
-  // graph 1
-  d3.csv("https://EmmanB1.github.io/CS-416-Narrative-Visualization/CS416_covid19_deaths_US.csv",
   
-    // When reading the csv, I must format variables:
-    function(d){
-      console.log(d.YearTwoDate)
-      return { date : d3.timeParse("%m/%d/%Y")(d.YearOneDate), value : d.YearOneValue }
-    }).then(
-  
-    // Now I can use this dataset:
-    function(data) {
-        
-      // Add X axis --> it is a date format
-      const x = d3.scaleTime()
-        .domain(d3.extent(data, function(d) { return d.date; }))
-        .range([ 0, width ]);
-      svg.append("g")
-        .attr("transform", `translate(0, ${height})`)
-        .call(d3.axisBottom(x));
-  
-      // Add Y axis
-      const y = d3.scaleLinear()
-        .domain([0, d3.max(data, function(d) { return +d.value; })])
-        .range([ height, 0 ]);
-      svg.append("g")
-        .call(d3.axisLeft(y));
-  
-      // Add the line
-      svg.append("path")
-        .datum(data)
-        .attr("fill", "none")
-        .attr("stroke", "steelblue")
-        .attr("stroke-width", 1.5)
-        .attr("d", d3.line()
-          .x(function(d) { return x(d.date) })
-          .y(function(d) { return y(d.value) })
-          )
-  
-  })
+  // First Scene: Year 2020
+  // Have the option to switch parameters between confirmed and deaths
+  function firstScene() {
+    // set scene number
+    scene_num = 1;
+    // Clear visualization
+    d3.select("#svg_viz").selectAll("g").html("");
+    let data_url = "";
+    if (param == "Confirmed") data_url = "CS416_covid19_confirmed_US";
+    else data_url = "CS416_covid19_deaths_US";
+    // graph 1
+    d3.csv("https://EmmanB1.github.io/CS-416-Narrative-Visualization/"+ data_url + ".csv",
+
+      // When reading the csv, I must format variables:
+      function(d){
+        return { date : d3.timeParse("%m/%d/%Y")(d.YearOneDate), value : d.YearOneValue }
+      }).then(
+
+      // Now I can use this dataset:
+      function(data) {
+          
+        // Add X axis --> it is a date format
+        const x = d3.scaleTime()
+          .domain(d3.extent(data, function(d) { return d.date; }))
+          .range([ 0, width ]);
+        svg.append("g")
+          .attr("transform", `translate(0, ${height})`)
+          .call(d3.axisBottom(x));
+
+        // Add Y axis
+        const y = d3.scaleLinear()
+          .domain([0, d3.max(data, function(d) { return +d.value; })])
+          .range([ height, 0 ]);
+        svg.append("g")
+          .call(d3.axisLeft(y));
+
+        // Add the line
+        svg.append("path")
+          .datum(data)
+          .attr("fill", "none")
+          .attr("stroke", "steelblue")
+          .attr("stroke-width", 1.5)
+          .attr("d", d3.line()
+            .x(function(d) { return x(d.date) })
+            .y(function(d) { return y(d.value) })
+            )
+
+    })
+  }
+
+  function secondScene() {
+    // set scene number
+    scene_num = 2;
+    // Clear visualization
+    d3.select("#svg_viz").selectAll("g").html("");
+    let data_url = "";
+    if (param == "Confirmed") data_url = "CS416_covid19_confirmed_US";
+    else data_url = "CS416_covid19_deaths_US";
+    // graph 1
+    d3.csv("https://EmmanB1.github.io/CS-416-Narrative-Visualization/"+ data_url + ".csv",
+
+      // When reading the csv, I must format variables:
+      function(d){
+        return { date : d3.timeParse("%m/%d/%Y")(d.YearTwoDate), value : d.YearTwoValue }
+      }).then(
+
+      // Now I can use this dataset:
+      function(data) {
+          
+        // Add X axis --> it is a date format
+        const x = d3.scaleTime()
+          .domain(d3.extent(data, function(d) { return d.date; }))
+          .range([ 0, width ]);
+        svg.append("g")
+          .attr("transform", `translate(0, ${height})`)
+          .call(d3.axisBottom(x));
+
+        // Add Y axis
+        const y = d3.scaleLinear()
+          .domain([0, d3.max(data, function(d) { return +d.value; })])
+          .range([ height, 0 ]);
+        svg.append("g")
+          .call(d3.axisLeft(y));
+
+        // Add the line
+        svg.append("path")
+          .datum(data)
+          .attr("fill", "none")
+          .attr("stroke", "steelblue")
+          .attr("stroke-width", 1.5)
+          .attr("d", d3.line()
+            .x(function(d) { return x(d.date) })
+            .y(function(d) { return y(d.value) })
+            )
+
+    })
+  }
+
+  function thirdScene() {
+    // set scene number
+    scene_num = 3;
+    // Clear visualization
+    d3.select("#svg_viz").selectAll("g").html("");
+    let data_url = "";
+    if (param == "Confirmed") data_url = "CS416_covid19_confirmed_US";
+    else data_url = "CS416_covid19_deaths_US";
+    // graph 1
+    d3.csv("https://EmmanB1.github.io/CS-416-Narrative-Visualization/"+ data_url + ".csv",
+
+      // When reading the csv, I must format variables:
+      function(d){
+        return { date : d3.timeParse("%m/%d/%Y")(d.YearThreeDate), value : d.YearThreeValue }
+      }).then(
+
+      // Now I can use this dataset:
+      function(data) {
+          
+        // Add X axis --> it is a date format
+        const x = d3.scaleTime()
+          .domain(d3.extent(data, function(d) { return d.date; }))
+          .range([ 0, width ]);
+        svg.append("g")
+          .attr("transform", `translate(0, ${height})`)
+          .call(d3.axisBottom(x));
+
+        // Add Y axis
+        const y = d3.scaleLinear()
+          .domain([0, d3.max(data, function(d) { return +d.value; })])
+          .range([ height, 0 ]);
+        svg.append("g")
+          .call(d3.axisLeft(y));
+
+        // Add the line
+        svg.append("path")
+          .datum(data)
+          .attr("fill", "none")
+          .attr("stroke", "steelblue")
+          .attr("stroke-width", 1.5)
+          .attr("d", d3.line()
+            .x(function(d) { return x(d.date) })
+            .y(function(d) { return y(d.value) })
+            )
+
+    })
+  }
   // // graph 2
   // d3.csv("https://EmmanB1.github.io/CS-416-Narrative-Visualization/CS416_covid19_deaths_US.csv",
   
