@@ -62,7 +62,7 @@
 </style>
 <!-- Load d3.js -->
 <script src="https://d3js.org/d3.v6.js"></script>
-
+<script src="https://rawgit.com/susielu/d3-annotation/master/d3-annotation.min.js"></script>
 <!-- Create a div where the graph will take place -->
 <div>
   <h1> Covid-19 in America: Through The Years</h1>
@@ -71,22 +71,295 @@
   <button onclick="secondScene()"> 2021 </button>
   <button onclick="thirdScene()"> 2022 </button>
   <button onclick="nextPage()"> Next Year &#8594; </button>
+  <div>
+    <text> Confirmed Cases Graph: </text>
+    <text> Deaths Graph: </text>
+  </div>
+  
   <div id="my_dataviz">
-    <svg id="svg_viz"></svg>
+    <h1> Welcome to COVID-19 in America: Through the Years </h1>
+    <h2> Take a look into how the United States tackled this potent virus from 2020 - 2022 </h2>
+    <h3> Graph Data comes from Johns Hopkins University </h3>
+    <h3> Annotations come from the CDC timeline (https://www.cdc.gov/museum/timeline/covid19.html) and AJMC timeline (https://www.ajmc.com/view/a-timeline-of-covid19-developments-in-2020) </h3>
+    <svg id="svg_confirmed"></svg>
+    <svg id="svg_deaths"></svg>
   </div>
   <!-- <label class="switch">
     <input type="checkbox">
     <div class="slider"> <span>confirmed</span></div>
   </label> -->
-  <div id="curr_view"> </div>
-  <button id="confirmed_btn" value="Confirmed" onclick="paramTrigger('Confirmed')"> Confirmed </button>
-  <button id="death_btn" value="Deaths" onclick="paramTrigger('Deaths')"> Deaths </button>
+  <!-- <div id="curr_view"> </div> -->
   <button onclick="resetZoom()"> Reset Zoom </button>
   <button onclick="center()"> Center </button>
 </div>
 
 
 <script>
+  // Features of the annotation
+  // https://www.ajmc.com/view/a-timeline-of-covid19-developments-in-2020
+  // https://www.cdc.gov/museum/timeline/covid19.html
+  const first_year_annotations = {
+      confirmed: [
+      {
+        note: {
+          label: "WHO declares COVID-19 a pandemic, President Donald Trump Declares COVID-19 a National Emergency days later",
+          title: "March 11: The Beginning"
+        },
+        x: 165,
+        y: 670,
+        dy: -25,
+        dx: -1
+      },
+      {
+        note: {
+          label: "Science Translational Medicine suggests as many as 80% of flu-like illnesses were undetected COVID-19 cases",
+          title: "June 22: Many Undetected Cases"
+        },
+        x: 320,
+        y: 620,
+        dy: -50,
+        dx: -1,
+      },
+      {
+        note: {
+          label: "The first known case of COVID-19 reinfection reported in the US",
+          title: "August 28: COVID-19 Reinfections are possible"
+        },
+        x: 495,
+        y: 480,
+        dy: -20,
+        dx: -50,
+      },
+      {
+        note: {
+          label: "This estimate was predicted by Health Official Dr. Fauci in June",
+          title: "October 2: US Reach 100,000 Cases a day"
+        },
+        x: 570,
+        y: 427,
+        dy: -10,
+        dx: -5,
+      },
+      {
+        note: {
+          label: "FDA Agrees to an EUA COVID-19 Vaccine from Pfizer-BioNTech; allowing shipments to begin.",
+          title: "December 11: Vaccines Shipped to the Nation"
+        },
+        x: 710,
+        y: 65,
+        dy: 1,
+        dx: -100,
+      },
+    
+    ],
+      deaths: [
+        { 
+          note: {
+            label: "The first COVID-19 death reported in America",
+            title: "Feburary 29: The First American Death"
+          },
+          x: 150,
+          y: 670,
+          dy: -25,
+          dx: 0,
+        },
+        {
+          note: {
+            label: "US COVID-19 Deaths Surpass 100,000",
+            title: "May 23: COVID-19 Deaths Surge 100,000"
+          },
+          x: 320,
+          y: 485,
+          dy: -50,
+          dx: -20,
+        },
+        {
+          note: {
+            label: "FDA Agrees to an EUA COVID-19 Vaccine from Pfizer-BioNTech; allowing shipments to begin.",
+            title: "December 11: Vaccines Shipped to the Nation"
+          },
+          x: 710,
+          y: 65,
+          dy: 1,
+          dx: -100,
+        },
+]
+    };
+  
+  const second_year_annotations = {
+    confirmed: [
+      {
+        note: {
+          label: "By March, more than 100 million COVID-19 vaccine doses administered and 200 million by April",
+          title: "Vaccine Doses"
+        },
+        x: 250,
+        y: 305,
+        dy: -10,
+        dx: -10
+      },
+      {
+        note: {
+          label: "CDC finds that mRNA COVID-19 vaccines reduce the risk of infection with the virus by 94%",
+          title: "April 28: Vaccines Reduced Infection Risk"
+        },
+        x: 300,
+        y: 282,
+        dy: 10,
+        dx: 5
+      },
+      {
+        note: {
+          label: "“Delta” variant first identified in India eventually causing a third wave of infections in US",
+          title: "June 1: COVID-19 B.1.617.2 / Delta Variant"
+        },
+        x: 360,
+        y: 268,
+        dy: -20,
+        dx: 1
+      },
+        {
+        note: {
+          label: 'WHO publishes a clinical case definition of "post COVID-19 Condition" or long COVID',
+          title: "October 6, 2021: Long COVID"
+        },
+        x: 600,
+        y: 128,
+        dy: 100,
+        dx: -2
+      },
+      {
+        note: {
+          label: 'The first case of the Omicron variant in the US detected',
+          title: "December 1: Omicron Variant"
+        },
+        x: 690,
+        y: 75,
+        dy: 10,
+        dx: -1
+      },
+      
+    ],
+    deaths: [
+      {
+        note: {
+          label: "Biden Administration announces National Strategy for the COVID-19 Response as death tolls pass 400,000",
+          title: "January 18: Biden Administration's COVID-19 Response"
+        },
+        x: 150,
+        y: 318,
+        dy: 5,
+        dx: 1
+      },
+      {
+      note: {
+        label: "“Delta” variant first identified in India eventually causing a third wave of infections in US",
+        title: "June 1: COVID-19 B.1.617.2 / Delta Variant"
+      },
+      x: 375,
+      y: 195,
+      dy: 5,
+      dx: 10
+    },
+    {
+      note: {
+        label: 'The first case of the Omicron variant in the US detected',
+        title: "December 1: Omicron Variant"
+      },
+      x: 680,
+      y: 40,
+      dy: 40,
+      dx: -1
+    },
+    ]
+  };
+
+  const third_year_annotations = {
+    confirmed: [
+      {
+        note: {
+          label: 'US reports nearly 1 million new COVID-19 infections. In one month, new COVID-19 infections spiked from 119,216 to 805,062',
+          title: "January 3: 1 million New Infections in One Day amid Omicron surge"
+        },
+        x: 100,
+        y: 307,
+        dy: 1,
+        dx: 1
+      },
+      {
+        note: {
+          label: 'CDC update shows that more than 98% of the US population live in either a low or medium COVID-19 community transmission level',
+          title: "March 11: End is near...?"
+        },
+        x: 235,
+        y: 147,
+        dy: 1,
+        dx: 10
+      },
+      {
+        note: {
+          label: 'CDC recommends mask wearing while in indoor transportation hubs to prevent COVID-19 spread',
+          title: "May 3: Indoor Mask Transportation Enforcement lifted"
+        },
+        x: 325,
+        y: 131,
+        dy: 20,
+        dx: 100
+      },
+      {
+        note: {
+          label: 'Experts expect that the virus will not go away, since people who have been infected or vaccinated are still at risk of reinfection',
+          title: "The End: Will this ever end?"
+        },
+        x: 600,
+        y: 350,
+      },
+    ],
+    deaths: [
+      {
+        note: {
+          label: 'Death rate of COVID-19 climbs 30% amid an Omicron surge, more than 2,600 people dying daily',
+          title: "Feburary 4: Death Rates surge amid Omicron spread"
+        },
+        x: 160,
+        y: 125,
+        dy: 1,
+        dx: 1
+      },
+      {
+        note: {
+          label: 'COVID-19 reported after heart disease and cancer in cause of death in 2021 and 2022',
+          title: "April 22: Third leading Cause of Death in the US"
+        },
+        x: 320,
+        y: 65,
+        dy: 10,
+        dx: 1
+      },
+      {
+        note: {
+          label: 'COVID-19 death tolls surpass 1,000,000',
+          title: "May 12: One million US COVID-19 Deaths"
+        },
+        x: 360,
+        y: 62,
+        dy: 25,
+        dx: 100
+      },
+      {
+        note: {
+          label: 'Experts expect that the virus will not go away, since people who have been infected or vaccinated are still at risk of reinfection',
+          title: "The End: Will this ever end?"
+        },
+        x: 600,
+        y: 350,
+      },
+    ]
+  };
+  const annotations = [
+
+  ]
+
   /** @TODO: ToolTip: show x any y axis data (DOES NOT COUNT AS ANNOTATION)
    * Data Filter: By seasons? Spring, Summer, Fall, Winter?
    * Annotations: annotations throughout the years (historical events, interesting points of American history that interests you)
@@ -97,7 +370,12 @@
       height = 700 - margin.top - margin.bottom;
   
   // append the svg object to the body of the page
-  const svg = d3.select("#svg_viz")
+  const svg_confirmed = d3.select("#svg_confirmed")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+  const svg_deaths = d3.select("#svg_deaths")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
     .append("g")
@@ -116,8 +394,8 @@
       .attr('transform', e.transform)
   }
   // start zoom
-  d3.select('svg')
-    .call(zoom);
+  // d3.select('svg')
+  //   .call(zoom);
   // zooms user back to original location
   function resetZoom() {
     d3.select('svg')
@@ -130,21 +408,9 @@
       .transition()
       .call(zoom.translateTo, 0.5 * width, 0.5 * height);
   }
-  document.getElementById("curr_view").innerHTML = "Now Viewing: " + param;
+  // document.getElementById("curr_view").innerHTML = "Now Viewing: " + param;
 
-  // @TODO: Connect this with the data
-  function paramTrigger(value) {
-    // update website view
-    document.getElementById("curr_view").innerHTML = "Now Viewing: " + value;
-    // Update page if parameter is changed
-    if (param != value) {
-      param = value;
-      if (scene_num == 1) firstScene();
-      else if (scene_num == 2) secondScene();
-      else if (scene_num == 3) thirdScene();
-    }
-  }
-  /// trigger to move to previous scene
+  // trigger to move to previous scene
   function prevPage() {
     // update page
     if (scene_num - 1 == 1) firstScene();
@@ -166,14 +432,25 @@
     // // reset Zoom (if any)
     // resetZoom();
     // set scene number
+     // Add annotation to the chart
     scene_num = 1;
     // Clear visualization
-    d3.select("#svg_viz").selectAll("g").html("");
-    let data_url = "";
-    if (param == "Confirmed") data_url = "CS416_covid19_confirmed_US";
-    else data_url = "CS416_covid19_deaths_US";
-    // graph 1
-    d3.csv("https://EmmanB1.github.io/CS-416-Narrative-Visualization/"+ data_url + ".csv",
+    d3.select("#svg_confirmed").selectAll("g").html("");
+    d3.select("#svg_deaths").selectAll("g").html("");
+    
+    // build annotations for graphs
+    const makeAnnotations = [d3.annotation()
+      .annotations(first_year_annotations['confirmed']),
+      d3.annotation()
+      .annotations(first_year_annotations['deaths']) ]
+    d3.select("#svg_confirmed")
+      .append("g")
+      .call(makeAnnotations[0])
+    d3.select("#svg_deaths")
+      .append("g")
+      .call(makeAnnotations[1])
+    // Generate Confirmed Cases Graph
+    d3.csv("https://EmmanB1.github.io/CS-416-Narrative-Visualization/CS416_covid19_confirmed_US.csv",
 
       // When reading the csv, I must format variables:
       function(d){
@@ -187,7 +464,7 @@
         const x = d3.scaleTime()
           .domain(d3.extent(data, function(d) { return d.date; }))
           .range([ 0, width ]);
-        svg.append("g")
+        svg_confirmed.append("g")
           .attr("transform", `translate(0, ${height})`)
           .call(d3.axisBottom(x));
 
@@ -195,11 +472,49 @@
         const y = d3.scaleLinear()
           .domain([0, d3.max(data, function(d) { return +d.value; })])
           .range([ height, 0 ]);
-        svg.append("g")
+        svg_confirmed.append("g")
           .call(d3.axisLeft(y));
 
         // Add the line
-        svg.append("path")
+        svg_confirmed.append("path")
+          .datum(data)
+          .attr("fill", "none")
+          .attr("stroke", "steelblue")
+          .attr("stroke-width", 1.5)
+          .attr("d", d3.line()
+            .x(function(d) { return x(d.date) })
+            .y(function(d) { return y(d.value) })
+            )
+
+    })
+    // Generate Deaths Graph
+    d3.csv("https://EmmanB1.github.io/CS-416-Narrative-Visualization/CS416_covid19_deaths_US.csv",
+
+      // When reading the csv, I must format variables:
+      function(d){
+        return { date : d3.timeParse("%m/%d/%Y")(d.YearOneDate), value : d.YearOneValue }
+      }).then(
+
+      // Now I can use this dataset:
+      function(data) {
+          
+        // Add X axis --> it is a date format
+        const x = d3.scaleTime()
+          .domain(d3.extent(data, function(d) { return d.date; }))
+          .range([ 0, width ]);
+        svg_deaths.append("g")
+          .attr("transform", `translate(0, ${height})`)
+          .call(d3.axisBottom(x));
+
+        // Add Y axis
+        const y = d3.scaleLinear()
+          .domain([0, d3.max(data, function(d) { return +d.value; })])
+          .range([ height, 0 ]);
+        svg_deaths.append("g")
+          .call(d3.axisLeft(y));
+
+        // Add the line
+        svg_deaths.append("path")
           .datum(data)
           .attr("fill", "none")
           .attr("stroke", "steelblue")
@@ -216,12 +531,22 @@
     // set scene number
     scene_num = 2;
     // Clear visualization
-    d3.select("#svg_viz").selectAll("g").html("");
-    let data_url = "";
-    if (param == "Confirmed") data_url = "CS416_covid19_confirmed_US";
-    else data_url = "CS416_covid19_deaths_US";
-    // graph 1
-    d3.csv("https://EmmanB1.github.io/CS-416-Narrative-Visualization/"+ data_url + ".csv",
+    d3.select("#svg_confirmed").selectAll("g").html("");
+    d3.select("#svg_deaths").selectAll("g").html("");
+    
+    const makeAnnotations = [d3.annotation()
+      .annotations(second_year_annotations['confirmed']),
+      d3.annotation()
+      .annotations(second_year_annotations['deaths']) ]
+    d3.select("#svg_confirmed")
+      .append("g")
+      .call(makeAnnotations[0])
+    d3.select("#svg_deaths")
+      .append("g")
+      .call(makeAnnotations[1]);
+
+    // Generate Confirmed Cases Graph
+    d3.csv("https://EmmanB1.github.io/CS-416-Narrative-Visualization/CS416_covid19_confirmed_US.csv",
 
       // When reading the csv, I must format variables:
       function(d){
@@ -235,7 +560,7 @@
         const x = d3.scaleTime()
           .domain(d3.extent(data, function(d) { return d.date; }))
           .range([ 0, width ]);
-        svg.append("g")
+        svg_confirmed.append("g")
           .attr("transform", `translate(0, ${height})`)
           .call(d3.axisBottom(x));
 
@@ -243,11 +568,49 @@
         const y = d3.scaleLinear()
           .domain([0, d3.max(data, function(d) { return +d.value; })])
           .range([ height, 0 ]);
-        svg.append("g")
+        svg_confirmed.append("g")
           .call(d3.axisLeft(y));
 
         // Add the line
-        svg.append("path")
+        svg_confirmed.append("path")
+          .datum(data)
+          .attr("fill", "none")
+          .attr("stroke", "steelblue")
+          .attr("stroke-width", 1.5)
+          .attr("d", d3.line()
+            .x(function(d) { return x(d.date) })
+            .y(function(d) { return y(d.value) })
+            )
+
+    })
+    // Generate Deaths Graph
+    d3.csv("https://EmmanB1.github.io/CS-416-Narrative-Visualization/CS416_covid19_deaths_US.csv",
+
+      // When reading the csv, I must format variables:
+      function(d){
+        return { date : d3.timeParse("%m/%d/%Y")(d.YearTwoDate), value : d.YearTwoValue }
+      }).then(
+
+      // Now I can use this dataset:
+      function(data) {
+          
+        // Add X axis --> it is a date format
+        const x = d3.scaleTime()
+          .domain(d3.extent(data, function(d) { return d.date; }))
+          .range([ 0, width ]);
+        svg_deaths.append("g")
+          .attr("transform", `translate(0, ${height})`)
+          .call(d3.axisBottom(x));
+
+        // Add Y axis
+        const y = d3.scaleLinear()
+          .domain([0, d3.max(data, function(d) { return +d.value; })])
+          .range([ height, 0 ]);
+        svg_deaths.append("g")
+          .call(d3.axisLeft(y));
+
+        // Add the line
+        svg_deaths.append("path")
           .datum(data)
           .attr("fill", "none")
           .attr("stroke", "steelblue")
@@ -264,12 +627,22 @@
     // set scene number
     scene_num = 3;
     // Clear visualization
-    d3.select("#svg_viz").selectAll("g").html("");
-    let data_url = "";
-    if (param == "Confirmed") data_url = "CS416_covid19_confirmed_US";
-    else data_url = "CS416_covid19_deaths_US";
-    // graph 1
-    d3.csv("https://EmmanB1.github.io/CS-416-Narrative-Visualization/"+ data_url + ".csv",
+    d3.select("#svg_confirmed").selectAll("g").html("");
+    d3.select("#svg_deaths").selectAll("g").html("");
+
+    const makeAnnotations = [d3.annotation()
+      .annotations(third_year_annotations['confirmed']),
+      d3.annotation()
+      .annotations(third_year_annotations['deaths']) ]
+    d3.select("#svg_confirmed")
+      .append("g")
+      .call(makeAnnotations[0])
+    d3.select("#svg_deaths")
+      .append("g")
+      .call(makeAnnotations[1]);
+
+    /// Generate Confirmed Cases Graph
+    d3.csv("https://EmmanB1.github.io/CS-416-Narrative-Visualization/CS416_covid19_confirmed_US.csv",
 
       // When reading the csv, I must format variables:
       function(d){
@@ -283,7 +656,7 @@
         const x = d3.scaleTime()
           .domain(d3.extent(data, function(d) { return d.date; }))
           .range([ 0, width ]);
-        svg.append("g")
+        svg_confirmed.append("g")
           .attr("transform", `translate(0, ${height})`)
           .call(d3.axisBottom(x));
 
@@ -291,11 +664,11 @@
         const y = d3.scaleLinear()
           .domain([0, d3.max(data, function(d) { return +d.value; })])
           .range([ height, 0 ]);
-        svg.append("g")
+        svg_confirmed.append("g")
           .call(d3.axisLeft(y));
 
         // Add the line
-        svg.append("path")
+        svg_confirmed.append("path")
           .datum(data)
           .attr("fill", "none")
           .attr("stroke", "steelblue")
@@ -305,7 +678,45 @@
             .y(function(d) { return y(d.value) })
             )
 
-    })
+      })
+      // Generate Deaths Graph
+      d3.csv("https://EmmanB1.github.io/CS-416-Narrative-Visualization/CS416_covid19_deaths_US.csv",
+
+      // When reading the csv, I must format variables:
+      function(d){
+        return { date : d3.timeParse("%m/%d/%Y")(d.YearThreeDate), value : d.YearThreeValue }
+      }).then(
+
+      // Now I can use this dataset:
+      function(data) {
+          
+        // Add X axis --> it is a date format
+        const x = d3.scaleTime()
+          .domain(d3.extent(data, function(d) { return d.date; }))
+          .range([ 0, width ]);
+        svg_deaths.append("g")
+          .attr("transform", `translate(0, ${height})`)
+          .call(d3.axisBottom(x));
+
+        // Add Y axis
+        const y = d3.scaleLinear()
+          .domain([0, d3.max(data, function(d) { return +d.value; })])
+          .range([ height, 0 ]);
+        svg_deaths.append("g")
+          .call(d3.axisLeft(y));
+
+        // Add the line
+        svg_deaths.append("path")
+          .datum(data)
+          .attr("fill", "none")
+          .attr("stroke", "steelblue")
+          .attr("stroke-width", 1.5)
+          .attr("d", d3.line()
+            .x(function(d) { return x(d.date) })
+            .y(function(d) { return y(d.value) })
+            )
+
+      })
   }
 </script>
 </html>
