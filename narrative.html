@@ -66,25 +66,26 @@
 <!-- Create a div where the graph will take place -->
 <div>
   <h1> Covid-19 in America: Through The Years</h1>
-  <button onclick="prevPage()"> Prev Year &#8592; </button>
+  <button onclick="prevPage()"> &#8592; Prev Year </button>
   <button onclick="firstScene()"> 2020 </button>
   <button onclick="secondScene()"> 2021 </button>
   <button onclick="thirdScene()"> 2022 </button>
   <button onclick="nextPage()"> Next Year &#8594; </button>
-  <div>
-    <text> Confirmed Cases Graph: </text>
-    <text> Deaths Graph: </text>
-  </div>
   
   <div id="my_dataviz">
     <h1> Welcome to COVID-19 in America: Through the Years </h1>
     <h2> Take a look into how the United States tackled this potent virus from 2020 - 2022 </h2>
     <h3> Graph Data comes from Johns Hopkins University </h3>
     <h3> Annotations come from the CDC timeline (https://www.cdc.gov/museum/timeline/covid19.html) and AJMC timeline (https://www.ajmc.com/view/a-timeline-of-covid19-developments-in-2020) </h3>
+    <text> Confirmed Cases Graph: </text>
+    <br>
     <svg id="svg_confirmed"></svg>
     <br>
     <button onclick="confirmedResetZoom()"> Reset Zoom </button>
     <button onclick="confirmedCenter()"> Center </button>
+    <br>
+    <br>
+    <text> Deaths Graph: </text>
     <br>
     <svg id="svg_deaths"></svg>
     <br>
