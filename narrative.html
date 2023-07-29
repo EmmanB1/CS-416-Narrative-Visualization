@@ -82,15 +82,21 @@
     <h3> Graph Data comes from Johns Hopkins University </h3>
     <h3> Annotations come from the CDC timeline (https://www.cdc.gov/museum/timeline/covid19.html) and AJMC timeline (https://www.ajmc.com/view/a-timeline-of-covid19-developments-in-2020) </h3>
     <svg id="svg_confirmed"></svg>
+    <br>
+    <button onclick="confirmedResetZoom()"> Reset Zoom </button>
+    <button onclick="confirmedCenter()"> Center </button>
+    <br>
     <svg id="svg_deaths"></svg>
+    <br>
+    <button onclick="deathsResetZoom()"> Reset Zoom </button>
+    <button onclick="deathsCenter()"> Center </button>
   </div>
   <!-- <label class="switch">
     <input type="checkbox">
     <div class="slider"> <span>confirmed</span></div>
   </label> -->
   <!-- <div id="curr_view"> </div> -->
-  <button onclick="resetZoom()"> Reset Zoom </button>
-  <button onclick="center()"> Center </button>
+  
 </div>
 
 
@@ -356,9 +362,6 @@
       },
     ]
   };
-  const annotations = [
-
-  ]
 
   /** @TODO: ToolTip: show x any y axis data (DOES NOT COUNT AS ANNOTATION)
    * Data Filter: By seasons? Spring, Summer, Fall, Winter?
@@ -380,33 +383,57 @@
       .attr("height", height + margin.top + margin.bottom)
     .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
-  // trigger parameters
-  let param = "Confirmed";
+  // year parameters
   let scene_num = 0;
 
   // zoom resource: https://www.d3indepth.com/zoom-and-pan/
-  let zoom = d3.zoom()
-              .on('zoom', handleZoom)
+  let zoom_confirmed = d3.zoom()
+              .on('zoom', confirmedHandleZoom)
               .scaleExtent([1,5])
               .translateExtent([[-200, -200], [width+200, height+200]]);
-  function handleZoom(e) {
-    d3.select('g')
+  let zoom_deaths = d3.zoom()
+              .on('zoom', deathsHandleZoom)
+              .scaleExtent([1,5])
+              .translateExtent([[-200, -200], [width+200, height+200]]);
+  function confirmedHandleZoom(e) {
+    d3.select('#svg_confirmed').select('g')
+      .attr('transform', e.transform)
+  }
+  function deathsHandleZoom(e) {
+    d3.select('#svg_deaths').select('g')
       .attr('transform', e.transform)
   }
   // start zoom
-  // d3.select('svg')
-  //   .call(zoom);
+  // @TODO: Fix Zoom feature for svg confirmed and deaths
+  function initZoomConfirmed() {
+    d3.select('#svg_confirmed')
+      .call(zoom_confirmed);
+  }
+  function initZoomDeaths() {
+    d3.select('#svg_deaths')
+      .call(zoom_deaths);
+  }
   // zooms user back to original location
-  function resetZoom() {
-    d3.select('svg')
+  function confirmedResetZoom() {
+    d3.select('#svg_confirmed')
       .transition()
-      .call(zoom.scaleTo, 1);
+      .call(zoom_confirmed.scaleTo, 1);
+  }
+  function deathsResetZoom() {
+    d3.select('#svg_deaths')
+      .transition()
+      .call(zoom_deaths.scaleTo, 1);
   }
   // moves user back to the middle of graph
-  function center() {
-    d3.select('svg')
+  function confirmedCenter() {
+    d3.select('#svg_confirmed')
       .transition()
-      .call(zoom.translateTo, 0.5 * width, 0.5 * height);
+      .call(zoom_confirmed.translateTo, 0.5 * width, 0.5 * height);
+  }
+  function deathsCenter() {
+    d3.select('#svg_deaths')
+      .transition()
+      .call(zoom_deaths.translateTo, 0.5 * width, 0.5 * height);
   }
   // document.getElementById("curr_view").innerHTML = "Now Viewing: " + param;
 
@@ -485,7 +512,17 @@
             .x(function(d) { return x(d.date) })
             .y(function(d) { return y(d.value) })
             )
-
+        svg_confirmed.append("text")
+          .attr("class", "x label")
+          .attr("x", -200)
+          .attr("y", height/2)
+          .text("Confirmed Cases")
+        
+        svg_confirmed.append("text")
+        .attr("class", "y label")
+        .attr("x", width/2)
+        .attr("y", 700)
+        .text("2020")
     })
     // Generate Deaths Graph
     d3.csv("https://EmmanB1.github.io/CS-416-Narrative-Visualization/CS416_covid19_deaths_US.csv",
@@ -523,8 +560,25 @@
             .x(function(d) { return x(d.date) })
             .y(function(d) { return y(d.value) })
             )
-
+        svg_deaths.append("text")
+          .attr("class", "x label")
+          .attr("x", -150)
+          .attr("y", height/2)
+          .text("Deaths")
+        
+        svg_deaths.append("text")
+        .attr("class", "y label")
+        .attr("x", width/2)
+        .attr("y", 700)
+        .text("2020")
     })
+    // make sure graphs are centered and reset
+    confirmedCenter();
+    deathsCenter();
+    deathsResetZoom();
+    confirmedResetZoom();
+    initZoomConfirmed();
+    initZoomDeaths();
   }
 
   function secondScene() {
@@ -581,7 +635,17 @@
             .x(function(d) { return x(d.date) })
             .y(function(d) { return y(d.value) })
             )
-
+        svg_confirmed.append("text")
+          .attr("class", "x label")
+          .attr("x", -200)
+          .attr("y", height/2)
+          .text("Confirmed Cases")
+        
+        svg_confirmed.append("text")
+        .attr("class", "y label")
+        .attr("x", width/2)
+        .attr("y", 700)
+        .text("2021")
     })
     // Generate Deaths Graph
     d3.csv("https://EmmanB1.github.io/CS-416-Narrative-Visualization/CS416_covid19_deaths_US.csv",
@@ -619,8 +683,25 @@
             .x(function(d) { return x(d.date) })
             .y(function(d) { return y(d.value) })
             )
-
+        svg_deaths.append("text")
+          .attr("class", "x label")
+          .attr("x", -150)
+          .attr("y", height/2)
+          .text("Deaths")
+        
+        svg_deaths.append("text")
+        .attr("class", "y label")
+        .attr("x", width/2)
+        .attr("y", 700)
+        .text("2021")
     })
+    // make sure graphs are centered and reset
+    confirmedCenter();
+    deathsCenter();
+    deathsResetZoom();
+    confirmedResetZoom();
+    initZoomConfirmed();
+    initZoomDeaths();
   }
 
   function thirdScene() {
@@ -640,7 +721,7 @@
     d3.select("#svg_deaths")
       .append("g")
       .call(makeAnnotations[1]);
-
+    
     /// Generate Confirmed Cases Graph
     d3.csv("https://EmmanB1.github.io/CS-416-Narrative-Visualization/CS416_covid19_confirmed_US.csv",
 
@@ -677,7 +758,17 @@
             .x(function(d) { return x(d.date) })
             .y(function(d) { return y(d.value) })
             )
-
+        svg_confirmed.append("text")
+          .attr("class", "x label")
+          .attr("x", -200)
+          .attr("y", height/2)
+          .text("Confirmed Cases")
+        
+        svg_confirmed.append("text")
+        .attr("class", "y label")
+        .attr("x", width/2)
+        .attr("y", 700)
+        .text("2022")
       })
       // Generate Deaths Graph
       d3.csv("https://EmmanB1.github.io/CS-416-Narrative-Visualization/CS416_covid19_deaths_US.csv",
@@ -715,8 +806,25 @@
             .x(function(d) { return x(d.date) })
             .y(function(d) { return y(d.value) })
             )
-
+        svg_deaths.append("text")
+          .attr("class", "x label")
+          .attr("x", -150)
+          .attr("y", height/2)
+          .text("Deaths")
+        
+        svg_deaths.append("text")
+        .attr("class", "y label")
+        .attr("x", width/2)
+        .attr("y", 700)
+        .text("2022")
       })
+    // make sure graphs are centered and reset
+    confirmedCenter();
+    deathsCenter();
+    deathsResetZoom();
+    confirmedResetZoom();
+    initZoomConfirmed();
+    initZoomDeaths();
   }
 </script>
 </html>
