@@ -66,6 +66,10 @@
 <!-- Create a div where the graph will take place -->
 <div>
   <h1> Covid-19 in America: Through The Years</h1>
+  <h1> Welcome to COVID-19 in America: Through the Years </h1>
+  <h2> Take a look into how the United States tackled this potent virus from 2020 - 2022 </h2>
+  <h3> Graph Data comes from Johns Hopkins University </h3>
+  <h3> Annotations come from the CDC timeline (https://www.cdc.gov/museum/timeline/covid19.html) and AJMC timeline (https://www.ajmc.com/view/a-timeline-of-covid19-developments-in-2020) </h3>
   <button onclick="prevPage()"> &#8592; Prev Year </button>
   <button onclick="firstScene()"> 2020 </button>
   <button onclick="secondScene()"> 2021 </button>
@@ -73,10 +77,9 @@
   <button onclick="nextPage()"> Next Year &#8594; </button>
   
   <div id="my_dataviz">
-    <h1> Welcome to COVID-19 in America: Through the Years </h1>
-    <h2> Take a look into how the United States tackled this potent virus from 2020 - 2022 </h2>
-    <h3> Graph Data comes from Johns Hopkins University </h3>
-    <h3> Annotations come from the CDC timeline (https://www.cdc.gov/museum/timeline/covid19.html) and AJMC timeline (https://www.ajmc.com/view/a-timeline-of-covid19-developments-in-2020) </h3>
+    <br>
+    <h3 id="now_viewing"></h3>
+    <br>
     <text> Confirmed Cases Graph: </text>
     <br>
     <svg id="svg_confirmed"></svg>
@@ -454,6 +457,9 @@
     d3.select("#svg_confirmed").selectAll("g").html("");
     d3.select("#svg_deaths").selectAll("g").html("");
     
+    // update "now viewing" text
+    document.getElementById("now_viewing").innerHTML = "Now Viewing: Year 2020";
+
     // build annotations for graphs
     const makeAnnotations = [d3.annotation()
       .annotations(first_year_annotations['confirmed']),
@@ -578,6 +584,9 @@
     d3.select("#svg_confirmed").selectAll("g").html("");
     d3.select("#svg_deaths").selectAll("g").html("");
     
+    // update "now viewing" text
+    document.getElementById("now_viewing").innerHTML = "Now Viewing: Year 2021";
+
     const makeAnnotations = [d3.annotation()
       .annotations(second_year_annotations['confirmed']),
       d3.annotation()
@@ -701,6 +710,9 @@
     // Clear visualization
     d3.select("#svg_confirmed").selectAll("g").html("");
     d3.select("#svg_deaths").selectAll("g").html("");
+
+    // update "now viewing" text
+    document.getElementById("now_viewing").innerHTML = "Now Viewing: Year 2022";
 
     const makeAnnotations = [d3.annotation()
       .annotations(third_year_annotations['confirmed']),
